@@ -58,7 +58,7 @@ async function cleanup() {
   await db
     .from('health_samples')
     .delete()
-    .gte('start_at', `${D1}T00:00:00Z`)
+    .gte('start_at', '2025-03-09T00:00:00Z')
     .lte('start_at', `${D2}T23:59:59Z`);
   await db.from('diary_entries').delete().eq('product_name', 'ZZ Export');
 }

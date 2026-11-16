@@ -913,6 +913,7 @@ export type Database = {
         Args: { decisions: Json; payload: Json }
         Returns: Json
       }
+      restore_backup: { Args: { payload: Json }; Returns: Json }
       revoke_api_token: { Args: never; Returns: undefined }
       search_products: {
         Args: {
