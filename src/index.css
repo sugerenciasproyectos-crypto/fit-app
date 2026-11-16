@@ -1,1 +1,81 @@
 @import 'tailwindcss';
+
+/* Tokens "Ticket de supermercado". Deben coincidir con src/ui/tokens/tokens.ts (test). */
+:root {
+  --paper: #fbfaf6;
+  --paper-2: #f2f0e9;
+  --ink: #1b1a17;
+  --ink-2: #5f5b52;
+  --rule: #c9c4b7;
+  --alert: #b3261e;
+  --action: #1f3f9a;
+  --action-ink: #ffffff;
+  --sel: #dfe5f7;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #1f1e1b;
+    --paper-2: #292825;
+    --ink: #eeeae0;
+    --ink-2: #aaa496;
+    --rule: #4a4740;
+    --alert: #ff8a80;
+    --action: #9db4ff;
+    --action-ink: #10182f;
+    --sel: #2e3a5e;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: #1f1e1b;
+  --paper-2: #292825;
+  --ink: #eeeae0;
+  --ink-2: #aaa496;
+  --rule: #4a4740;
+  --alert: #ff8a80;
+  --action: #9db4ff;
+  --action-ink: #10182f;
+  --sel: #2e3a5e;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-rule: var(--rule);
+  --color-alert: var(--alert);
+  --color-action: var(--action);
+  --color-action-ink: var(--action-ink);
+  --color-sel: var(--sel);
+  --font-mono: var(--mono);
+  --font-sans: var(--sans);
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
