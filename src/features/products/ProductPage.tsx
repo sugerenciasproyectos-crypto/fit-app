@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { NUTRIENT_KEYS } from '../../domain/nutrition';
 import { Button, SectionTitle, TextField } from '../../ui/primitives';
 import { useUserId } from '../auth/useAuth';
+import { ProductSupermarkets } from '../supermarkets/ProductSupermarkets';
 import {
   productsKey,
   saveProduct,
@@ -256,6 +257,10 @@ function Editor({ product }: { product: ProductWithPortions | null }) {
           + Añadir porción
         </Button>
       </section>
+
+      {product && (
+        <ProductSupermarkets productId={product.id} suggested={product.suggested_stores} />
+      )}
 
       {product && (
         <footer className="grid gap-0.5 text-xs text-ink-2">

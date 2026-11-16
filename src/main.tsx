@@ -14,6 +14,8 @@ import SavedMealPage from './features/meals/SavedMealPage';
 import ProfileEdit from './features/profile/ProfileEdit';
 import ScannerPage from './features/scanner/ScannerPage';
 import AboutPage from './features/settings/AboutPage';
+import ImportPage from './features/import/ImportPage';
+import SupermarketsPage from './features/supermarkets/SupermarketsPage';
 import SettingsPage from './features/settings/SettingsPage';
 import ProgressPage from './features/progress/ProgressPage';
 import TodayPage from './features/diary/TodayPage';
@@ -42,6 +44,8 @@ const router = createBrowserRouter([
               { path: 'progreso', element: <ProgressPage /> },
               { path: 'productos', element: <ProductsHub /> },
               { path: 'productos/comidas/:id', element: <SavedMealPage /> },
+              { path: 'importar', element: <ImportPage /> },
+              { path: 'supermercados', element: <SupermarketsPage /> },
               { path: 'productos/:id', element: <ProductPage /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/perfil', element: <ProfileEdit /> },

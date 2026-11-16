@@ -2,6 +2,7 @@ import { Plus, Search, Star } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
 import { Link } from 'react-router';
 import { fmtKcal } from '../../lib/format';
+import { useSupermarkets } from '../supermarkets/api';
 import { SOURCE_LABEL, useProductSearch, type Product, type ProductSource } from './api';
 
 function Row({ p }: { p: Product }) {
@@ -53,6 +54,8 @@ export default function ProductsPage({ recipesOnly = false }: { recipesOnly?: bo
   const [q, setQ] = useState('');
   const [onlyFav, setOnlyFav] = useState(false);
   const [review, setReview] = useState(false);
+  const [market, setMarket] = useState('');
+  const markets = useSupermarkets();
   const [sourceSel, setSource] = useState<ProductSource | ''>('');
   const source = recipesOnly ? 'receta' : sourceSel;
   const deferred = useDeferredValue(q);
@@ -61,6 +64,7 @@ export default function ProductsPage({ recipesOnly = false }: { recipesOnly?: bo
     onlyFav,
     review,
     source: source || null,
+    supermarket: market || null,
     limit: 200,
   });
 
@@ -119,6 +123,30 @@ export default function ProductsPage({ recipesOnly = false }: { recipesOnly?: bo
             </option>
           ))}
         </select>
+        {(markets.data?.length ?? 0) > 0 && (
+          <select
+            aria-label="Supermercado"
+            value={market}
+            onChange={(e) => setMarket(e.target.value)}
+            className={chip(!!market)}
+          >
+            <option value="">Súper: todos</option>
+            {markets.data!.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        )}
+        <Link
+          to="/supermercados"
+          className="flex min-h-11 items-center text-sm text-action underline"
+        >
+          Supermercados
+        </Link>
+        <Link to="/importar" className="flex min-h-11 items-center text-sm text-action underline">
+          Importar JSON
+        </Link>
       </div>
 
       {error && (

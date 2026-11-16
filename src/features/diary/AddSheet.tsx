@@ -9,6 +9,7 @@ import { Button } from '../../ui/primitives';
 import { Sheet } from '../../ui/Sheet';
 import { useUserId } from '../auth/useAuth';
 import { searchUsda, upsertExternal, type Normalized } from '../external/cache';
+import { useSupermarkets } from '../supermarkets/api';
 import { productsKey, useProductSearch, type Product } from '../products/api';
 import type { MealSlot } from './api';
 
@@ -41,11 +42,14 @@ export function AddSheet({
   const meals = useSavedMeals();
   const [q, setQ] = useState('');
   const [tab, setTab] = useState<Tab>('recientes');
+  const [market, setMarket] = useState('');
+  const markets = useSupermarkets();
   const deferred = useDeferredValue(q.trim());
   const searching = deferred.length > 0;
   const { data, isLoading, error } = useProductSearch({
     q: deferred,
     onlyFav: !searching && tab === 'favoritos',
+    supermarket: market || null,
     limit: searching ? 40 : 200,
   });
   const list = searching
@@ -128,6 +132,21 @@ export function AddSheet({
             ))}
           </select>
         </label>
+        {(markets.data?.length ?? 0) > 0 && (
+          <select
+            aria-label="Supermercado"
+            value={market}
+            onChange={(e) => setMarket(e.target.value)}
+            className="min-h-11 w-fit rounded-full border border-rule bg-paper px-3 text-sm"
+          >
+            <option value="">Súper: todos</option>
+            {markets.data!.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        )}
         {!searching && (
           <div role="tablist" className="flex gap-4 text-sm">
             {(['recientes', 'favoritos', 'guardadas'] as const).map((t) => (

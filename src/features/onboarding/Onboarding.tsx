@@ -156,6 +156,15 @@ export default function Onboarding() {
           <p className="text-ink-2">
             Puedes configurar Apple Salud o importar productos más tarde desde Ajustes y Productos.
           </p>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              persist(null);
+              navigate('/importar', { replace: true });
+            }}
+          >
+            Importar productos (JSON)
+          </Button>
           <Button onClick={finish}>Empezar</Button>
         </>
       )}
