@@ -22,11 +22,15 @@ Tiempo estimado: 30–40 minutos la primera vez.
 
 ## 1. Variables de configuración
 
+> **Cómo se crea cada «variable» de esta guía:** se usan dos acciones seguidas. Primero la acción que produce el valor (por ejemplo **Texto**) y justo debajo **Establecer variable**, con el nombre indicado. Después, donde la guía dice `URL`, `TOKEN`, etc., toca el campo, elige **Seleccionar variable** (o la barra de variables sobre el teclado) y elige esa variable. En lugar de **Establecer variable** también vale renombrar la salida de la acción (tócala → **Renombrar**), pero no todas las versiones de iOS lo permiten.
+
 Añade estas acciones al principio:
 
-1. **Texto** → pega la dirección del atajo. Renombra la variable a `URL`.
-2. **Texto** → pega el token. Renómbrala a `TOKEN`.
-3. **Fecha** → «Fecha actual». Después **Ajustar fecha** → «Restar 7 días». Renómbrala a `DESDE`.
+1. **Texto** (escribe dentro la dirección del atajo) → **Establecer variable** `URL`.
+2. **Texto** (escribe dentro el token, sin comillas ni espacios) → **Establecer variable** `TOKEN`.
+3. **Fecha** («Fecha actual») → **Ajustar fecha** («Restar 7 días») → **Establecer variable** `DESDE`.
+
+En el resto de la guía, «Renombra a `X`» significa lo mismo: añade **Establecer variable** `X` justo después de esa acción. Y «Añadir a la variable» es la acción **Añadir a variable**, que va acumulando elementos en una lista.
 
 ---
 
