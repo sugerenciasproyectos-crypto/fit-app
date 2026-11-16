@@ -12,6 +12,8 @@ import ProductPage from './features/products/ProductPage';
 import ProductsPage from './features/products/ProductsPage';
 import ProfileEdit from './features/profile/ProfileEdit';
 import SettingsPage from './features/settings/SettingsPage';
+import TodayPage from './features/diary/TodayPage';
+import { ToastProvider } from './ui/toast';
 import AppShell from './ui/AppShell';
 import Placeholder from './ui/Placeholder';
 
@@ -32,7 +34,7 @@ const router = createBrowserRouter([
           {
             element: <AppShell />,
             children: [
-              { index: true, element: <Placeholder title="Hoy" /> },
+              { index: true, element: <TodayPage /> },
               { path: 'progreso', element: <Placeholder title="Progreso" /> },
               { path: 'productos', element: <ProductsPage /> },
               { path: 'productos/:id', element: <ProductPage /> },
@@ -50,7 +52,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <ToastProvider>
+          <RouterProvider router={router} />
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,

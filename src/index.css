@@ -97,3 +97,34 @@ body {
   outline: 2px solid var(--action);
   outline-offset: 2px;
 }
+
+/* Hojas: suben en 200 ms */
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+.sheet-in {
+  animation: sheet-in 200ms ease-out;
+}
+
+/* Firma: "imprimir el renglón" (180 ms, de arriba abajo) */
+@keyframes print-row {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-4px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+.print-row {
+  animation: print-row 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .print-row,
+  .sheet-in {
+    animation: none;
+  }
+}
