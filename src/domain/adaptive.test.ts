@@ -86,10 +86,18 @@ describe('semana evaluada', () => {
     expect(r.targetKcalProposed).toBeCloseTo(r.tdeeProposed - 400, 8);
   });
   it('ajuste limitado a ±150', () => {
-    const up = evaluateWeek(week3, synth({ days: 21, kcal: 4000, kgPerDay: 0 }), params) as Proposal;
+    const up = evaluateWeek(
+      week3,
+      synth({ days: 21, kcal: 4000, kgPerDay: 0 }),
+      params,
+    ) as Proposal;
     expect(up.tdeeProposed).toBe(2650);
     expect(up.clamped).toBe(true);
-    const down = evaluateWeek(week3, synth({ days: 21, kcal: 1000, kgPerDay: 0 }), params) as Proposal;
+    const down = evaluateWeek(
+      week3,
+      synth({ days: 21, kcal: 1000, kgPerDay: 0 }),
+      params,
+    ) as Proposal;
     expect(down.tdeeProposed).toBe(2350);
   });
   it('el objetivo propuesto respeta el suelo', () => {

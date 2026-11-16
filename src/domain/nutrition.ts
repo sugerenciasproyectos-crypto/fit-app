@@ -51,7 +51,10 @@ export interface Totals {
 
 /** Suma de los valores no null; un nutriente es parcial si algún registro lo tiene a null. */
 export function sumNutrients(entries: ReadonlyArray<Nutrients>): Totals {
-  const totals = Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, 0])) as Record<NutrientKey, number>;
+  const totals = Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, 0])) as Record<
+    NutrientKey,
+    number
+  >;
   const partial = Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, false])) as Record<
     NutrientKey,
     boolean
