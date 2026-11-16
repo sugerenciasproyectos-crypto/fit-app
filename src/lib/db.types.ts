@@ -897,7 +897,58 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      copy_seed_to: { Args: { p_user: string }; Returns: number }
       f_norm: { Args: { t: string }; Returns: string }
+      search_products: {
+        Args: {
+          lim?: number
+          only_fav?: boolean
+          q: string
+          supermarket?: string
+        }
+        Returns: {
+          barcode: string | null
+          base_unit: Database["public"]["Enums"]["base_unit"]
+          brand: string | null
+          carbs_g: number | null
+          category: string | null
+          confidence: Database["public"]["Enums"]["confidence_lvl"] | null
+          created_at: string
+          deleted_at: string | null
+          density_g_ml: number | null
+          energy_kcal: number | null
+          fat_g: number | null
+          favorite: boolean
+          fiber_g: number | null
+          id: string
+          last_portion_id: string | null
+          last_quantity: number | null
+          last_used_at: string | null
+          manually_edited: boolean
+          name: string
+          name_norm: string | null
+          needs_review: boolean
+          package_size: number | null
+          protein_g: number | null
+          remote_fetched_at: string | null
+          remote_snapshot: Json | null
+          salt_g: number | null
+          saturated_fat_g: number | null
+          source: Database["public"]["Enums"]["product_source"]
+          source_id: string | null
+          sugars_g: number | null
+          suggested_stores: string[]
+          updated_at: string
+          user_id: string
+          warnings: string[]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       activity_level:

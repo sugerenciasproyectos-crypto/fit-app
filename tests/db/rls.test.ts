@@ -64,7 +64,10 @@ describe('RLS-1: aislamiento entre usuarios', () => {
   });
 
   it.each(TABLES)('B no lee filas de A en %s', async (t) => {
-    const { data, error } = await B.db.from(t as 'products').select('user_id').eq('user_id', A.id);
+    const { data, error } = await B.db
+      .from(t as 'products')
+      .select('user_id')
+      .eq('user_id', A.id);
     if (t === 'api_tokens') {
       // sin permiso de columna user_id para authenticated: error o vacío
       expect(error !== null || data?.length === 0).toBe(true);
