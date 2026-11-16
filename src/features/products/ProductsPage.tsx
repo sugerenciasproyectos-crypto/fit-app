@@ -49,11 +49,12 @@ const SOURCES: ProductSource[] = [
 ];
 
 /** T3 Productos. Recetas y comidas guardadas llegan en las fases 7 y 9. */
-export default function ProductsPage() {
+export default function ProductsPage({ recipesOnly = false }: { recipesOnly?: boolean }) {
   const [q, setQ] = useState('');
   const [onlyFav, setOnlyFav] = useState(false);
   const [review, setReview] = useState(false);
-  const [source, setSource] = useState<ProductSource | ''>('');
+  const [sourceSel, setSource] = useState<ProductSource | ''>('');
+  const source = recipesOnly ? 'receta' : sourceSel;
   const deferred = useDeferredValue(q);
   const { data, isLoading, error, isFetching } = useProductSearch({
     q: deferred,
@@ -69,9 +70,9 @@ export default function ProductsPage() {
   return (
     <div className="grid gap-4 py-4">
       <header className="flex items-center justify-between">
-        <h1 className="num text-2xl">Productos</h1>
+        <h1 className="num text-2xl">{recipesOnly ? 'Recetas' : 'Productos'}</h1>
         <Link
-          to="/productos/nuevo"
+          to={recipesOnly ? '/productos/recetas/nueva' : '/productos/nuevo'}
           className="flex min-h-11 items-center gap-1 rounded bg-action px-3 text-action-ink"
         >
           <Plus size={18} aria-hidden /> Nuevo

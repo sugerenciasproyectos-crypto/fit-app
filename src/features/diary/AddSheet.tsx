@@ -2,7 +2,8 @@ import { ScanBarcode, Search } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
 import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { fmtKcal } from '../../lib/format';
+import { fmtKcal, fmtQty } from '../../lib/format';
+import { savedMealKcal, useSavedMeals, type SavedMealWithItems } from '../meals/api';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../ui/primitives';
 import { Sheet } from '../../ui/Sheet';
@@ -11,7 +12,13 @@ import { searchUsda, upsertExternal, type Normalized } from '../external/cache';
 import { productsKey, useProductSearch, type Product } from '../products/api';
 import type { MealSlot } from './api';
 
-type Tab = 'recientes' | 'favoritos';
+type Tab = 'recientes' | 'favoritos' | 'guardadas';
+
+function quickLabel(p: Product): string {
+  return p.last_portion_id
+    ? `${fmtQty(p.last_quantity ?? 1)} porción`
+    : `${fmtQty(p.last_quantity ?? 0)} ${p.base_unit}`;
+}
 
 /** H1 Añadir: búsqueda local, selector de comida y pestañas Recientes · Favoritos. */
 export function AddSheet({
@@ -19,14 +26,19 @@ export function AddSheet({
   slotId,
   onSlot,
   onPick,
+  onQuick,
+  onSavedMeal,
   onClose,
 }: {
   slots: MealSlot[];
   slotId: string;
   onSlot: (id: string) => void;
   onPick: (p: Product) => void;
+  onQuick?: (p: Product) => void;
+  onSavedMeal?: (m: SavedMealWithItems) => void;
   onClose: () => void;
 }) {
+  const meals = useSavedMeals();
   const [q, setQ] = useState('');
   const [tab, setTab] = useState<Tab>('recientes');
   const deferred = useDeferredValue(q.trim());
@@ -118,7 +130,7 @@ export function AddSheet({
         </label>
         {!searching && (
           <div role="tablist" className="flex gap-4 text-sm">
-            {(['recientes', 'favoritos'] as const).map((t) => (
+            {(['recientes', 'favoritos', 'guardadas'] as const).map((t) => (
               <button
                 key={t}
                 role="tab"
@@ -127,7 +139,7 @@ export function AddSheet({
                 onClick={() => setTab(t)}
                 className={`min-h-11 capitalize ${tab === t ? 'text-ink underline underline-offset-4' : 'text-ink-2'}`}
               >
-                {t}
+                {t === 'guardadas' ? 'Comidas guardadas' : t}
               </button>
             ))}
           </div>
@@ -135,29 +147,74 @@ export function AddSheet({
       </div>
 
       {error && <p className="text-alert">No se pudo buscar: {error.message}</p>}
-      {isLoading ? (
+      {!searching && tab === 'guardadas' ? (
+        meals.data && meals.data.length > 0 ? (
+          <ul className="divide-y divide-dashed divide-rule">
+            {meals.data.map((m) => (
+              <li key={m.id}>
+                <button
+                  type="button"
+                  onClick={() => onSavedMeal?.(m)}
+                  className="flex min-h-12 w-full items-baseline gap-1 py-2 text-left"
+                >
+                  <span className="min-w-0 truncate">
+                    {m.name}
+                    <span className="block text-xs text-ink-2">
+                      {m.items.length} alimentos · 1 toque
+                    </span>
+                  </span>
+                  <span aria-hidden className="leader min-w-4 flex-1" />
+                  <span className="num shrink-0">{fmtKcal(savedMealKcal(m))}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="grid gap-2 py-6 text-center">
+            <p className="text-ink-2">Aún no hay comidas guardadas.</p>
+            <Link to="/productos/comidas/nueva" className="text-action underline">
+              Crear comida guardada
+            </Link>
+          </div>
+        )
+      ) : isLoading ? (
         <p className="py-4 text-ink-2">Buscando…</p>
       ) : list && list.length > 0 ? (
         <ul className="divide-y divide-dashed divide-rule">
-          {list.map((p) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                onClick={() => onPick(p)}
-                className="flex min-h-12 w-full items-baseline gap-1 py-2 text-left"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate">{p.name}</span>
-                  {p.brand && <span className="block truncate text-xs text-ink-2">{p.brand}</span>}
-                </span>
-                <span aria-hidden className="leader min-w-4 flex-1" />
-                <span className="num shrink-0">
-                  {p.energy_kcal == null ? '—' : fmtKcal(p.energy_kcal)}
-                  <span className="text-xs text-ink-2">/100{p.base_unit}</span>
-                </span>
-              </button>
-            </li>
-          ))}
+          {list.map((p) => {
+            const quick = !searching && onQuick && p.last_quantity != null;
+            return (
+              <li key={p.id} className="flex items-stretch">
+                <button
+                  type="button"
+                  onClick={() => (quick ? onQuick(p) : onPick(p))}
+                  className="flex min-h-12 min-w-0 flex-1 items-baseline gap-1 py-2 text-left"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate">{p.name}</span>
+                    <span className="block truncate text-xs text-ink-2">
+                      {quick ? `↵ 1 toque · ${quickLabel(p)}` : (p.brand ?? '')}
+                    </span>
+                  </span>
+                  <span aria-hidden className="leader min-w-4 flex-1" />
+                  <span className="num shrink-0">
+                    {p.energy_kcal == null ? '—' : fmtKcal(p.energy_kcal)}
+                    <span className="text-xs text-ink-2">/100{p.base_unit}</span>
+                  </span>
+                </button>
+                {quick && (
+                  <button
+                    type="button"
+                    aria-label={`Elegir cantidad de ${p.name}`}
+                    onClick={() => onPick(p)}
+                    className="ml-1 grid w-11 place-items-center text-ink-2"
+                  >
+                    ⋯
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <div className="grid gap-3 py-6 text-center">

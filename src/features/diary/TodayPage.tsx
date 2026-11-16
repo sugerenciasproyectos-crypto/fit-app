@@ -28,6 +28,9 @@ import {
   type Entry,
 } from './api';
 import { AddSheet } from './AddSheet';
+import { CopySheet } from './CopySheet';
+import { deleteEntries, logSavedMeal } from '../meals/api';
+import { supabase } from '../../lib/supabase';
 import { madridTime, slotForTime } from './meals';
 import { QuantitySheet } from './QuantitySheet';
 import { RemainingBlock } from './RemainingBlock';
@@ -185,6 +188,38 @@ export default function TodayPage() {
         : undefined;
   const productDetail = useProduct(pending);
 
+  const [copying, setCopying] = useState(false);
+
+  /** 1 toque: registra con la última cantidad (y porción) usada. */
+  async function quickAdd(product: Product, slotId: string) {
+    let quantity = product.last_quantity ?? 100;
+    let portion: { id: string; name: string; count: number } | null = null;
+    if (product.last_portion_id) {
+      const { data } = await supabase
+        .from('portions')
+        .select('id, name, amount')
+        .eq('id', product.last_portion_id)
+        .maybeSingle();
+      if (data) {
+        portion = { id: data.id, name: data.name, count: product.last_quantity ?? 1 };
+        quantity = portion.count * data.amount;
+      }
+    }
+    setFresh(product.id);
+    vibrate();
+    add.mutate(
+      { day, mealSlotId: slotId, product, quantity, portion },
+      {
+        onSuccess: (row) =>
+          toast({
+            message: `Añadido · ${product.name}`,
+            action: { label: 'Deshacer', run: () => del.mutate(row) },
+          }),
+        onError: () => toast({ message: 'No se guardó', error: true }),
+      },
+    );
+  }
+
   // Enlace desde el escáner: /?producto=<id> abre H2 con ese producto.
   const deepId = params.get('producto');
   const deepProduct = useProduct(deepId ?? undefined);
@@ -270,6 +305,16 @@ export default function TodayPage() {
               }}
             >
               {flag.data ? 'Marcar día completo' : 'Marcar día incompleto'}
+            </button>
+            <button
+              type="button"
+              className="min-h-11 px-3 text-left"
+              onClick={() => {
+                setMenu(false);
+                setCopying(true);
+              }}
+            >
+              Copiar día o comida…
             </button>
             {day !== today && (
               <button
@@ -357,7 +402,7 @@ export default function TodayPage() {
       <button
         type="button"
         aria-label="Añadir alimento"
-        disabled={!online}
+        disabled={!online || !slots.data}
         onClick={() => setSheet({ kind: 'add', slotId: defaultSlot() })}
         className="fixed right-[max(1rem,calc(50vw-224px))] bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 grid size-14 place-items-center rounded-full bg-action text-action-ink disabled:opacity-50"
       >
@@ -370,6 +415,31 @@ export default function TodayPage() {
           slotId={sheet.slotId}
           onSlot={(id) => setSheet({ kind: 'add', slotId: id })}
           onPick={(product) => setSheet({ kind: 'qty', product, slotId: sheet.slotId })}
+          onQuick={(product) => {
+            const slotId = sheet.slotId;
+            setSheet(null);
+            void quickAdd(product, slotId);
+          }}
+          onSavedMeal={(meal) => {
+            const slotId = sheet.slotId;
+            setSheet(null);
+            logSavedMeal(userId, day, slotId, meal)
+              .then((rows) => {
+                vibrate();
+                void qc.invalidateQueries({ queryKey: diaryKey(day) });
+                toast({
+                  message: `Añadido · ${meal.name} (${rows.length})`,
+                  action: {
+                    label: 'Deshacer',
+                    run: () =>
+                      deleteEntries(rows.map((r) => r.id)).then(() =>
+                        qc.invalidateQueries({ queryKey: diaryKey(day) }),
+                      ),
+                  },
+                });
+              })
+              .catch((e: Error) => toast({ message: `No se guardó: ${e.message}`, error: true }));
+          }}
           onClose={() => setSheet(null)}
         />
       )}
@@ -459,6 +529,28 @@ export default function TodayPage() {
               },
               { onError: () => toast({ message: 'No se guardó', error: true }) },
             );
+          }}
+        />
+      )}
+      {copying && slots.data && (
+        <CopySheet
+          userId={userId}
+          day={day}
+          slots={slots.data}
+          onClose={() => setCopying(false)}
+          onDone={(rows) => {
+            setCopying(false);
+            void qc.invalidateQueries({ queryKey: diaryKey(day) });
+            toast({
+              message: `Copiados ${rows.length} registros`,
+              action: {
+                label: 'Deshacer',
+                run: () =>
+                  deleteEntries(rows.map((r) => r.id)).then(() =>
+                    qc.invalidateQueries({ queryKey: diaryKey(day) }),
+                  ),
+              },
+            });
           }}
         />
       )}

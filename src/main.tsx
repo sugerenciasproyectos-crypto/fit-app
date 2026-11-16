@@ -9,7 +9,8 @@ import LoginPage from './features/auth/LoginPage';
 import TokensPage from './features/dev/TokensPage';
 import Onboarding from './features/onboarding/Onboarding';
 import ProductPage from './features/products/ProductPage';
-import ProductsPage from './features/products/ProductsPage';
+import ProductsHub from './features/products/ProductsHub';
+import SavedMealPage from './features/meals/SavedMealPage';
 import ProfileEdit from './features/profile/ProfileEdit';
 import ScannerPage from './features/scanner/ScannerPage';
 import AboutPage from './features/settings/AboutPage';
@@ -39,7 +40,8 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <TodayPage /> },
               { path: 'progreso', element: <ProgressPage /> },
-              { path: 'productos', element: <ProductsPage /> },
+              { path: 'productos', element: <ProductsHub /> },
+              { path: 'productos/comidas/:id', element: <SavedMealPage /> },
               { path: 'productos/:id', element: <ProductPage /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/perfil', element: <ProfileEdit /> },
