@@ -31,6 +31,11 @@ import { AddSheet } from './AddSheet';
 import { madridTime, slotForTime } from './meals';
 import { QuantitySheet } from './QuantitySheet';
 import { RemainingBlock } from './RemainingBlock';
+import { useProposals } from '../tdee/api';
+import { ProposalCard } from '../tdee/ProposalCard';
+import { useWeights } from '../weight/api';
+import { WeightCard } from '../weight/WeightCard';
+import { trendAt } from '../../domain/trend';
 
 type Sheet =
   | { kind: 'add'; slotId: string }
@@ -125,6 +130,9 @@ export default function TodayPage() {
 
   const profile = useProfile();
   const weight = useLastWeight();
+  const weights = useWeights();
+  const proposals = useProposals();
+  const pendingProposal = proposals.data?.find((p) => p.status === 'pending');
   const slots = useMealSlots();
   const diary = useDiary(day);
   const flag = useDayFlag(day);
@@ -140,13 +148,10 @@ export default function TodayPage() {
   const totals = useMemo(() => sumNutrients(entries.map(entryNutrientsOf)), [entries]);
   const targets = useMemo(() => {
     if (!profile.data) return null;
-    return computeTargets(
-      profile.data,
-      weight.data?.weight_kg ?? 70,
-      today,
-      profile.data.tdee_current,
-    );
-  }, [profile.data, weight.data, today]);
+    const ref =
+      (weights.data && trendAt(weights.data.trend, today)) ?? weight.data?.weight_kg ?? 70;
+    return computeTargets(profile.data, ref, today, profile.data.tdee_current);
+  }, [profile.data, weight.data, weights.data, today]);
 
   useEffect(() => {
     if (!fresh) return;
@@ -268,6 +273,10 @@ export default function TodayPage() {
       </header>
 
       {targets && <RemainingBlock targets={targets} totals={totals} />}
+
+      <hr className="border-0 border-t border-dashed border-rule" />
+      {pendingProposal && <ProposalCard p={pendingProposal} />}
+      <WeightCard day={day} />
 
       <hr className="border-0 border-t border-dashed border-rule" />
 

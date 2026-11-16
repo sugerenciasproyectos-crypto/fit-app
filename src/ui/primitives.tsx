@@ -112,6 +112,10 @@ export function Dashes() {
   return <hr className="my-3 border-0 border-t border-dashed border-rule" />;
 }
 
-export function SectionTitle({ children }: { children: ReactNode }) {
-  return <h2 className="num text-xs tracking-[0.12em] text-ink-2 uppercase">{children}</h2>;
+export function SectionTitle({ children, id }: { children: ReactNode; id?: string }) {
+  return (
+    <h2 id={id} className="num text-xs tracking-[0.12em] text-ink-2 uppercase">
+      {children}
+    </h2>
+  );
 }

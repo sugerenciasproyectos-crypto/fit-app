@@ -1,5 +1,8 @@
 import { ChartLine, House, Package, Settings } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
+import { useUserId } from '../features/auth/useAuth';
+import { useProfile } from '../features/profile/api';
+import { useWeeklyEvaluation } from '../features/tdee/api';
 
 const TABS = [
   { to: '/', label: 'Hoy', icon: House, end: true },
@@ -9,6 +12,9 @@ const TABS = [
 ] as const;
 
 export default function AppShell() {
+  const userId = useUserId();
+  const profile = useProfile();
+  useWeeklyEvaluation(userId, profile.data);
   return (
     <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col">
       <div className="pt-safe flex-1 px-4 pb-24">
