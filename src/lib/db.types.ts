@@ -899,6 +899,10 @@ export type Database = {
     Functions: {
       copy_seed_to: { Args: { p_user: string }; Returns: number }
       f_norm: { Args: { t: string }; Returns: string }
+      import_products: {
+        Args: { decisions: Json; payload: Json }
+        Returns: Json
+      }
       search_products: {
         Args: {
           lim?: number

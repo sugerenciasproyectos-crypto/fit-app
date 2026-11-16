@@ -33,6 +33,7 @@ const cleanup = () => db.from('products').delete().eq('source_id', SRC_ID);
 beforeAll(async () => {
   ({ db, id: uid } = await signIn('A'));
   await cleanup();
+  await db.from('products').delete().eq('barcode', '3017624010701');
 });
 afterAll(async () => {
   await cleanup();
