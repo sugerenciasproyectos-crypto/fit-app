@@ -1,26 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router';
 import './index.css';
 import { AuthProvider } from './features/auth/auth';
 import { RequireAuth, RequireProfile } from './features/auth/guards';
 import LoginPage from './features/auth/LoginPage';
-import TokensPage from './features/dev/TokensPage';
-import Onboarding from './features/onboarding/Onboarding';
-import ProductPage from './features/products/ProductPage';
-import ProductsHub from './features/products/ProductsHub';
-import SavedMealPage from './features/meals/SavedMealPage';
-import ProfileEdit from './features/profile/ProfileEdit';
-import ScannerPage from './features/scanner/ScannerPage';
-import AboutPage from './features/settings/AboutPage';
-import ImportPage from './features/import/ImportPage';
-import SupermarketsPage from './features/supermarkets/SupermarketsPage';
-import RecipePage from './features/recipes/RecipePage';
-import HealthPage from './features/health/HealthPage';
-import BackupPage from './features/backup/BackupPage';
-import SettingsPage from './features/settings/SettingsPage';
-import ProgressPage from './features/progress/ProgressPage';
 import TodayPage from './features/diary/TodayPage';
 import { ToastProvider } from './ui/toast';
 import AppShell from './ui/AppShell';
@@ -29,33 +14,49 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
 });
 
+/** Ruta con carga diferida: Hoy y el login van en el bundle inicial; el resto, bajo demanda. */
+const lazy = (
+  load: () => Promise<{ default: React.ComponentType }>,
+): Pick<RouteObject, 'lazy'> => ({
+  lazy: async () => ({ Component: (await load()).default }),
+});
+
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
-  { path: '/dev/tokens', element: <TokensPage /> },
+  { path: '/dev/tokens', ...lazy(() => import('./features/dev/TokensPage')) },
   {
     element: <RequireAuth />,
     children: [
-      { path: '/bienvenida', element: <Onboarding /> },
+      { path: '/bienvenida', ...lazy(() => import('./features/onboarding/Onboarding')) },
       {
         element: <RequireProfile />,
         children: [
-          { path: '/escanear', element: <ScannerPage /> },
+          { path: '/escanear', ...lazy(() => import('./features/scanner/ScannerPage')) },
           {
             element: <AppShell />,
             children: [
               { index: true, element: <TodayPage /> },
-              { path: 'progreso', element: <ProgressPage /> },
-              { path: 'productos', element: <ProductsHub /> },
-              { path: 'productos/comidas/:id', element: <SavedMealPage /> },
-              { path: 'importar', element: <ImportPage /> },
-              { path: 'productos/recetas/:id', element: <RecipePage /> },
-              { path: 'supermercados', element: <SupermarketsPage /> },
-              { path: 'productos/:id', element: <ProductPage /> },
-              { path: 'ajustes', element: <SettingsPage /> },
-              { path: 'ajustes/perfil', element: <ProfileEdit /> },
-              { path: 'ajustes/acerca', element: <AboutPage /> },
-              { path: 'ajustes/salud', element: <HealthPage /> },
-              { path: 'ajustes/copia', element: <BackupPage /> },
+              { path: 'progreso', ...lazy(() => import('./features/progress/ProgressPage')) },
+              { path: 'productos', ...lazy(() => import('./features/products/ProductsHub')) },
+              {
+                path: 'productos/comidas/:id',
+                ...lazy(() => import('./features/meals/SavedMealPage')),
+              },
+              {
+                path: 'productos/recetas/:id',
+                ...lazy(() => import('./features/recipes/RecipePage')),
+              },
+              { path: 'productos/:id', ...lazy(() => import('./features/products/ProductPage')) },
+              { path: 'importar', ...lazy(() => import('./features/import/ImportPage')) },
+              {
+                path: 'supermercados',
+                ...lazy(() => import('./features/supermarkets/SupermarketsPage')),
+              },
+              { path: 'ajustes', ...lazy(() => import('./features/settings/SettingsPage')) },
+              { path: 'ajustes/perfil', ...lazy(() => import('./features/profile/ProfileEdit')) },
+              { path: 'ajustes/acerca', ...lazy(() => import('./features/settings/AboutPage')) },
+              { path: 'ajustes/salud', ...lazy(() => import('./features/health/HealthPage')) },
+              { path: 'ajustes/copia', ...lazy(() => import('./features/backup/BackupPage')) },
             ],
           },
         ],

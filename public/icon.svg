@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1b1a17"/>
+  <path d="M136 72h240v344l-20-16-20 16-20-16-20 16-20-16-20 16-20-16-20 16-20-16-20 16-20-16-20 16z" fill="#fbfaf6"/>
+  <g fill="none" stroke="#1b1a17" stroke-width="6" stroke-dasharray="2 10" stroke-linecap="round">
+    <path d="M166 150h180M166 190h180M166 310h180"/>
+  </g>
+  <text x="256" y="268" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="64" font-weight="700" fill="#1b1a17">kcal</text>
+</svg>
