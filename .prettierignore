@@ -6,3 +6,5 @@ design
 *.md
 .impeccable
 src/lib/db.types.ts
+playwright-report/
+test-results/

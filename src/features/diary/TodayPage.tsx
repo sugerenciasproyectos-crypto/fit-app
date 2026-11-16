@@ -63,9 +63,6 @@ function EntryRow({
     ? `${fmtQty(e.portion_count ?? 1)} × ${e.portion_name}`
     : `${fmtQty(e.quantity)} ${e.unit}`;
   const partial = [e.protein_g, e.carbs_g, e.fat_g, e.fiber_g].some((v) => v == null);
-  const label = `${e.product_name}, ${qty.replace(' g', ' gramos').replace(' ml', ' mililitros')}, ${
-    e.energy_kcal == null ? 'kilocalorías desconocidas' : `${fmtKcal(e.energy_kcal)} kilocalorías`
-  }`;
   return (
     <li className={`relative overflow-hidden ${fresh ? 'print-row' : ''}`}>
       <button
@@ -79,7 +76,6 @@ function EntryRow({
       </button>
       <button
         type="button"
-        aria-label={label}
         onClick={() => (dx < -40 ? setDx(0) : onOpen())}
         onTouchStart={(t: TouchEvent) => (start.current = t.touches[0]!.clientX)}
         onTouchMove={(t: TouchEvent) => {
@@ -102,10 +98,15 @@ function EntryRow({
               </span>
             )}
           </span>
+          <span className="sr-only">, </span>
           <span className="num block text-xs text-ink-2">{qty}</span>
         </span>
         <span aria-hidden className="leader min-w-4 flex-1" />
-        <span className="num shrink-0">{e.energy_kcal == null ? '—' : fmtKcal(e.energy_kcal)}</span>
+        <span className="sr-only">, </span>
+        <span className="num shrink-0">
+          {e.energy_kcal == null ? '—' : fmtKcal(e.energy_kcal)}
+          <span className="sr-only"> kcal</span>
+        </span>
       </button>
     </li>
   );
@@ -271,7 +272,7 @@ export default function TodayPage() {
       <hr className="border-0 border-t border-dashed border-rule" />
 
       {diary.isLoading || slots.isLoading ? (
-        <div className="grid gap-3" aria-busy="true" aria-label="Cargando">
+        <div className="grid gap-3" role="status" aria-busy="true" aria-label="Cargando">
           {[50, 70, 40, 60].map((w) => (
             <div key={w} className="h-4 rounded bg-paper-2" style={{ width: `${w}%` }} />
           ))}

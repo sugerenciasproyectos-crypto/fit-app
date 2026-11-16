@@ -126,7 +126,7 @@ export default function ProductsPage() {
         </p>
       )}
       {isLoading ? (
-        <div className="grid gap-3" aria-busy="true" aria-label="Cargando">
+        <div className="grid gap-3" role="status" aria-busy="true" aria-label="Cargando">
           {[70, 50, 80, 60].map((w) => (
             <div key={w} className="h-4 rounded bg-paper-2" style={{ width: `${w}%` }} />
           ))}

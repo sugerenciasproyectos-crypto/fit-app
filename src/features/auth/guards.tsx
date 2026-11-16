@@ -4,7 +4,12 @@ import { useAuth } from './useAuth';
 
 function Loading() {
   return (
-    <div className="mx-auto grid max-w-[480px] gap-3 p-4" aria-busy="true" aria-label="Cargando">
+    <div
+      className="mx-auto grid max-w-[480px] gap-3 p-4"
+      role="status"
+      aria-busy="true"
+      aria-label="Cargando"
+    >
       {[60, 80, 40].map((w) => (
         <div key={w} className="h-4 rounded bg-paper-2" style={{ width: `${w}%` }} />
       ))}
