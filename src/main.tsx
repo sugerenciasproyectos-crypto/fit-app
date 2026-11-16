@@ -10,6 +10,14 @@ import TodayPage from './features/diary/TodayPage';
 import { ToastProvider } from './ui/toast';
 import AppShell from './ui/AppShell';
 
+// Enlaces de invitación o recuperación (llegan a la raíz con #...type=invite|recovery).
+if (
+  /type=(invite|recovery)/.test(window.location.hash) &&
+  window.location.pathname !== '/nueva-contrasena'
+) {
+  window.history.replaceState(null, '', `/nueva-contrasena${window.location.hash}`);
+}
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true } },
 });
@@ -23,6 +31,7 @@ const lazy = (
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/nueva-contrasena', ...lazy(() => import('./features/auth/SetPasswordPage')) },
   { path: '/dev/tokens', ...lazy(() => import('./features/dev/TokensPage')) },
   {
     element: <RequireAuth />,

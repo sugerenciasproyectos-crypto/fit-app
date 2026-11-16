@@ -10,6 +10,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function forgot() {
+    if (!email) return setError('Escribe tu email y vuelve a pulsar.');
+    setError(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/nueva-contrasena`,
+    });
+    if (error) return setError(`No se pudo enviar: ${error.message}`);
+    setSent(true);
+  }
 
   if (session) return <Navigate to="/" replace />;
 
@@ -61,6 +72,18 @@ export default function LoginPage() {
           {busy ? 'Entrando…' : 'Entrar'}
         </Button>
       </form>
+      <button
+        type="button"
+        onClick={() => void forgot()}
+        className="min-h-11 text-sm text-action underline"
+      >
+        He olvidado mi contraseña
+      </button>
+      {sent && (
+        <p role="status" className="text-sm">
+          Te hemos enviado un email con un enlace para elegir contraseña.
+        </p>
+      )}
     </main>
   );
 }
