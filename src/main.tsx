@@ -8,6 +8,8 @@ import { RequireAuth, RequireProfile } from './features/auth/guards';
 import LoginPage from './features/auth/LoginPage';
 import TokensPage from './features/dev/TokensPage';
 import Onboarding from './features/onboarding/Onboarding';
+import ProductPage from './features/products/ProductPage';
+import ProductsPage from './features/products/ProductsPage';
 import ProfileEdit from './features/profile/ProfileEdit';
 import SettingsPage from './features/settings/SettingsPage';
 import AppShell from './ui/AppShell';
@@ -32,7 +34,8 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <Placeholder title="Hoy" /> },
               { path: 'progreso', element: <Placeholder title="Progreso" /> },
-              { path: 'productos', element: <Placeholder title="Productos" /> },
+              { path: 'productos', element: <ProductsPage /> },
+              { path: 'productos/:id', element: <ProductPage /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/perfil', element: <ProfileEdit /> },
             ],
