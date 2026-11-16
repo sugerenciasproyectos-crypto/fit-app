@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticket — escritorio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfaf6; --paper-2:#f2f0e9; --ink:#1b1a17; --ink-2:#5f5b52; --rule:#c9c4b7;
+  --alert:#b3261e; --action:#1f3f9a; --action-ink:#ffffff; --sel:#dfe5f7;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1f1e1b; --paper-2:#292825; --ink:#eeeae0; --ink-2:#aaa496; --rule:#4a4740;
+  --alert:#ff8a80; --action:#9db4ff; --action-ink:#10182f; --sel:#2e3a5e; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#1f1e1b; --paper-2:#292825; --ink:#eeeae0; --ink-2:#aaa496; --rule:#4a4740;
+  --alert:#ff8a80; --action:#9db4ff; --action-ink:#10182f; --sel:#2e3a5e; color-scheme:dark;}
+
+*{box-sizing:border-box;margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+html,body{height:100%}
+body{background:var(--paper-2);color:var(--ink);font:15px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+::selection{background:var(--sel);color:var(--ink)}
+:focus-visible{outline:2px solid var(--action);outline-offset:2px;border-radius:2px}
+*{scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav.rail{border-right:1px solid var(--rule);background:var(--paper);padding:28px 16px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{font:800 13px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:0 12px 28px}
+.brand span{color:var(--ink-2);font-weight:400}
+.rail a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:4px;color:var(--ink-2);text-decoration:none;min-height:44px}
+.rail a:hover{color:var(--ink);background:var(--paper-2)}
+.rail a[aria-current="page"]{color:var(--ink);font-weight:600;background:var(--paper-2)}
+.rail a[aria-current="page"] svg{stroke-width:2}
+.rail .spacer{flex:1}
+.rail .meta{font:12px/1.5 var(--mono);color:var(--ink-2);padding:0 12px}
+.theme{display:flex;gap:2px;margin:12px 12px 0;border:1px solid var(--rule);border-radius:4px;padding:4px;gap:4px}
+.theme button{flex:1;font:12px var(--mono);padding:6px 0;border-radius:3px;color:var(--ink-2)}
+.theme button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+main{padding:40px 48px 64px;min-width:0}
+.view{display:none}.view.on{display:block}
+
+/* ---------- ticket primitives ---------- */
+.ticket{background:var(--paper);position:relative;padding:28px 32px 32px}
+.ticket::before{content:"";position:absolute;left:0;right:0;top:-8px;height:8px;
+  background:linear-gradient(-45deg,var(--paper) 4px,transparent 0) 0 0/8px 8px repeat-x,
+             linear-gradient(45deg,var(--paper) 4px,transparent 0) 0 0/8px 8px repeat-x}
+.cut{border:0;border-top:1px dashed var(--rule);margin:20px 0}
+.caps{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.muted{color:var(--ink-2)}
+.leader{display:flex;align-items:baseline;gap:8px}
+.leader .dots{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-4px);min-width:16px}
+.right{text-align:right}
+
+/* ---------- HOY ---------- */
+.hoy{display:grid;grid-template-columns:minmax(440px,520px) minmax(340px,1fr);gap:40px;max-width:1180px;align-items:start}
+.dayhead{display:flex;align-items:center;justify-content:space-between}
+.dayhead .date{font:700 15px/1 var(--mono);letter-spacing:.08em}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;border-radius:4px;color:var(--ink-2)}
+.iconbtn:hover{background:var(--paper-2);color:var(--ink)}
+.restante{margin-top:24px}
+.restante .big{font:800 64px/1 var(--mono);letter-spacing:-.03em;margin:8px 0 4px;display:flex;align-items:baseline;gap:12px}
+.restante .big small{font:500 16px var(--mono);letter-spacing:0;color:var(--ink-2)}
+.bar{height:4px;background:var(--paper-2);position:relative;margin-top:6px}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--ink)}
+.kbar{margin:14px 0 18px}
+.kline{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--ink-2);margin-top:6px}
+.macros{display:grid;gap:10px}
+.macro{display:grid;grid-template-columns:20px 112px 1fr;align-items:center;gap:10px;font:13px var(--mono)}
+.macro b{font-weight:700}
+.macro .bar{margin:0;height:3px}
+.more{margin-top:14px;font:12px var(--mono);color:var(--ink-2);display:flex;gap:6px;align-items:center}
+.more:hover{color:var(--ink)}
+
+.notice{background:var(--ink);color:var(--paper);padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.notice .mono{font-size:13px}
+.notice .acts{display:flex;gap:6px}
+.btn{font:600 13px var(--sans);padding:9px 14px;border-radius:4px;min-height:36px}
+.btn.primary{background:var(--action);color:var(--action-ink)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.ghost{border:1px solid currentColor;opacity:.85}
+.btn.ghost:hover{opacity:1}
+.notice .btn.primary{background:var(--paper);color:var(--ink)}
+.weight{display:flex;justify-content:space-between;align-items:baseline;font:13px var(--mono);padding:14px 0 0}
+.weight b{font-size:15px}
+.ok{display:inline-flex;gap:4px;align-items:center;color:var(--ink-2)}
+
+.meal{margin-top:4px}
+.meal-h{display:flex;align-items:center;gap:10px;padding:10px 0 6px}
+.meal-h .leader{flex:1}
+.meal-h .caps{font-size:12px}
+.meal-h .num{font-weight:700}
+.add-s{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--rule);border-radius:4px;color:var(--ink-2)}
+.add-s:hover{border-color:var(--ink);color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0 8px 14px;min-height:48px;align-items:center;border-radius:3px;cursor:pointer}
+.row:hover{background:var(--paper-2)}
+.row .n{display:flex;align-items:baseline;gap:8px}
+.row .n .dots{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-4px)}
+.row .q{font:12px var(--mono);color:var(--ink-2);margin-top:1px}
+.row .k{font:500 14px var(--mono)}
+.mark{font:700 12px var(--mono);color:var(--ink-2);border:1px solid var(--rule);padding:0 4px;border-radius:2px}
+.mark.warn{color:var(--alert);border-color:var(--alert)}
+.empty-row{padding:8px 0 10px 14px;font:13px var(--mono);color:var(--ink-2)}
+.printed{animation:print .18s cubic-bezier(.16,1,.3,1)}
+@keyframes print{from{clip-path:inset(0 0 100% 0);transform:translateY(-6px)}to{clip-path:inset(0);transform:none}}
+@media (prefers-reduced-motion:reduce){.printed{animation:none}}
+.foot{margin-top:8px}
+.foot .leader{font:13px var(--mono);padding:3px 0}
+.foot .leader.total{font-weight:800;font-size:16px;padding-top:8px}
+.barcode{margin-top:22px;height:34px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 12px);opacity:.75}
+.barcode+p{font:12px var(--mono);color:var(--ink-2);letter-spacing:.3em;text-align:center;margin-top:6px}
+
+/* panel añadir */
+.panel{background:var(--paper);border:1px solid var(--rule);position:sticky;top:40px;display:flex;flex-direction:column;max-height:calc(100vh - 80px)}
+.panel-h{padding:20px 20px 0}
+.panel-h h2{font:700 13px var(--mono);letter-spacing:.12em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.slot{font:600 12px var(--mono);border:1px solid var(--rule);padding:6px 10px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+.search{display:flex;gap:8px;margin-top:16px}
+.search label{flex:1;display:flex;align-items:center;gap:10px;border:1px solid var(--ink);padding:0 12px;min-height:44px;border-radius:4px}
+.search input{border:0;background:none;outline:none;flex:1;font:15px var(--sans)}
+.search input::placeholder{color:var(--ink-2)}
+.search .scan{width:44px;border:1px solid var(--rule);border-radius:4px;display:grid;place-items:center}
+.tabs{display:flex;gap:18px;margin-top:16px;border-bottom:1px solid var(--rule);font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.tabs button{padding:10px 0;color:var(--ink-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+.chips{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.chip{font:12px var(--mono);border:1px solid var(--rule);padding:5px 10px;border-radius:999px;color:var(--ink-2)}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
+.results{overflow:auto;padding:8px 20px 4px}
+.res{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dotted var(--rule)}
+.res:last-child{border-bottom:0}
+.res .q{font:12px var(--mono);color:var(--ink-2)}
+.res .k{font:500 13px var(--mono)}
+.one{font:600 12px var(--mono);border:1px solid var(--action);color:var(--action);padding:6px 10px;border-radius:4px;display:inline-flex;gap:6px;align-items:center;min-height:32px}
+.one:hover{background:var(--action);color:var(--action-ink)}
+.qty{border-top:1px solid var(--rule);padding:18px 20px 20px;background:var(--paper)}
+.qty .top{display:flex;justify-content:space-between;align-items:baseline}
+.qty .amt{display:flex;align-items:baseline;gap:8px;margin:10px 0}
+.qty .amt input{width:110px;font:800 40px/1 var(--mono);border:0;border-bottom:2px solid var(--ink);background:none;padding:2px 0;outline:none}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.seg button{font:12px var(--mono);padding:7px 10px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0;font:12px var(--mono);color:var(--ink-2)}
+.mini b{display:block;font:700 15px var(--mono);color:var(--ink)}
+.btn.block{width:100%;padding:13px;font-size:15px}
+
+/* ---------- PROGRESO ---------- */
+.prog{max-width:980px}
+.headrow{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px}
+h1{font:800 28px/1.1 var(--mono);letter-spacing:-.01em}
+.prog-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+.prog .ticket{padding:24px 28px}
+.stat{display:grid;gap:14px}
+.stat .leader{font:13px var(--mono)}
+.stat .leader b{font-size:15px}
+figure{margin:0}
+figcaption{font:12px var(--mono);color:var(--ink-2);margin-top:10px}
+.chart text{font:12px var(--mono);fill:var(--ink-2)}
+.hist{width:100%;border-collapse:collapse;font:13px var(--mono)}
+.hist th{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:8px 8px;border-bottom:1px solid var(--ink)}
+.hist td{padding:10px 8px;border-bottom:1px dotted var(--rule)}
+.hist td.r,.hist th.r{text-align:right}
+.st{font:700 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.st.rej{color:var(--ink-2);text-decoration:line-through}
+.st.skip{color:var(--ink-2)}
+.adh{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.adh i{aspect-ratio:1;border:1px solid var(--rule)}
+.adh i.y{background:var(--ink);border-color:var(--ink)}
+.adh i.p{background:repeating-linear-gradient(45deg,var(--ink-2) 0 1px,transparent 1px 4px)}
+
+/* ---------- PRODUCTOS ---------- */
+.prod{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:32px;max-width:1240px;align-items:start}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.filters .search{margin:0;flex:1;min-width:280px}
+.ptable{width:100%;border-collapse:collapse;background:var(--paper)}
+.ptable th{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:12px 14px;border-bottom:1px solid var(--ink);position:sticky;top:0;background:var(--paper)}
+.ptable td{padding:12px 14px;border-bottom:1px dotted var(--rule);font-size:14px}
+.ptable td.num,.ptable th.r{text-align:right}
+.ptable tr:hover td{background:var(--paper-2)}
+.ptable tr[aria-selected="true"] td{background:var(--sel)}
+.ptable tr[aria-selected="true"] .brand-c,.ptable tr[aria-selected="true"] .src,.ptable tr[aria-selected="true"] .star{color:var(--ink)}
+.ptable .brand-c{color:var(--ink-2);font-size:13px}
+.src{font:12px var(--mono);color:var(--ink-2)}
+.star{color:var(--ink-2)}.star.on{color:var(--ink)}
+.star.on svg{fill:currentColor}
+.label{background:var(--paper);border:2px solid var(--ink);padding:18px 20px;position:sticky;top:40px}
+.label h2.lh{font:800 20px/1.2 var(--sans);margin-bottom:2px}
+.label .bar-ink{height:8px;background:var(--ink);margin:12px 0 6px}
+.label table{width:100%;border-collapse:collapse;font:13px var(--mono)}
+.label td{padding:5px 0;border-bottom:1px solid var(--rule)}
+.label td:last-child{text-align:right}
+.label tr.k td{font-weight:800;font-size:15px;border-bottom:4px solid var(--ink)}
+.label tr.sub td:first-child{padding-left:14px;color:var(--ink-2)}
+.label .na{color:var(--ink-2)}
+.sec{margin-top:18px}
+.sec h3{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.sec .leader{font:13px var(--mono);padding:3px 0}
+.prov{margin-top:18px;padding-top:12px;border-top:1px dashed var(--rule);font:12px/1.6 var(--mono);color:var(--ink-2)}
+.danger{margin-top:28px;display:flex;justify-content:flex-end}
+.danger button{font:12px var(--mono);color:var(--alert);border:1px solid var(--alert);padding:7px 12px;border-radius:4px}
+.synthetic{font:12px var(--mono);color:var(--ink-2);margin-top:28px}
+
+@media (max-width:1100px){
+  .hoy,.prod,.prog-grid{grid-template-columns:1fr}
+  .panel,.label{position:static}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" aria-label="Principal">
+    <div class="brand">Ticket<span> kcal</span></div>
+    <a href="#hoy" data-v="hoy"><svg class="i" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>Hoy</a>
+    <a href="#progreso" data-v="progreso"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/></svg>Progreso</a>
+    <a href="#productos" data-v="productos"><svg class="i" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg>Productos</a>
+    <a href="#ajustes" data-v="hoy"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Ajustes</a>
+    <div class="spacer"></div>
+    <p class="meta">Salud · sinc. 23:31<br>TDEE 2.450 kcal</p>
+    <div class="theme" role="group" aria-label="Tema">
+      <button data-t="system" aria-pressed="true">Auto</button><button data-t="light" aria-pressed="false">Claro</button><button data-t="dark" aria-pressed="false">Oscuro</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ================= HOY ================= -->
+    <section class="view" id="v-hoy" aria-label="Hoy"><h1 class="sr">Hoy</h1>
+      <div class="hoy">
+        <article class="ticket" aria-label="Ticket del día">
+          <div class="dayhead">
+            <button class="iconbtn" aria-label="Día anterior"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+            <div class="date">LUN 16 NOV 2026 · 14:05</div>
+            <div style="display:flex">
+              <button class="iconbtn" aria-label="Día siguiente"><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+              <button class="iconbtn" aria-label="Más opciones del día"><svg class="i" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+            </div>
+          </div>
+
+          <div class="restante">
+            <div class="caps muted">Restante</div>
+            <div class="big num" id="rest">1.284<small>kcal</small></div>
+            <div class="kbar">
+              <div class="bar" role="progressbar" aria-label="Kilocalorías" aria-valuenow="1066" aria-valuemax="2350"><i id="kfill" style="width:45%"></i></div>
+              <div class="kline"><span id="kcons">1.066 consumidas</span><span>objetivo 2.350</span></div>
+            </div>
+            <div class="macros">
+              <div class="macro"><b>P</b><span><b>98</b>/150 g</span><div class="bar" role="progressbar" aria-label="Proteína" aria-valuenow="98" aria-valuemax="150"><i style="width:65%"></i></div></div>
+              <div class="macro"><b>C</b><span><b>112</b>/262 g</span><div class="bar" role="progressbar" aria-label="Carbohidratos" aria-valuenow="112" aria-valuemax="262"><i style="width:43%"></i></div></div>
+              <div class="macro"><b>G</b><span><b>38</b>/ 71 g</span><div class="bar" role="progressbar" aria-label="Grasa" aria-valuenow="38" aria-valuemax="71"><i style="width:54%"></i></div></div>
+            </div>
+            <button class="more"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="m6 9 6 6 6-6"/></svg>fibra 14 · azúcar 31 · sal 3,1 · sat. 11 <span class="mark" title="Algún producto no tiene fibra">½</span></button>
+          </div>
+
+          <hr class="cut">
+          <div class="notice" role="status">
+            <svg class="i" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            <div><div class="mono"><b>TDEE 2.450 → 2.380</b></div><div style="font-size:12px;opacity:.75">Semana 46 · tu peso baja más despacio de lo previsto</div></div>
+            <div class="acts"><button class="btn ghost">Rechazar</button><button class="btn primary">Revisar</button></div>
+          </div>
+          <div class="weight"><span>PESO <b>78,4 kg</b> · tend. 78,9</span><span class="ok"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M20 6 9 17l-5-5"/></svg>Salud · 9.312 pasos</span></div>
+          <hr class="cut">
+
+          <div class="meal">
+            <div class="meal-h"><div class="leader caps"><span>Desayuno</span><span class="dots"></span><span class="num">412</span></div><button class="add-s" aria-label="Añadir a Desayuno"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+            <div class="row"><div><div class="n"><span>Copos de avena</span><span class="dots"></span></div><div class="q">60 g</div></div><span class="k">223</span></div>
+            <div class="row"><div><div class="n"><span>Leche semidesnatada</span><span class="dots"></span></div><div class="q">250 ml</div></div><span class="k">115</span></div>
+            <div class="row"><div><div class="n"><span>Plátano</span><span class="mark">≈</span><span class="dots"></span></div><div class="q">1 unidad · 82 g</div></div><span class="k">74</span></div>
+          </div>
+          <div class="meal">
+            <div class="meal-h"><div class="leader caps"><span>Comida</span><span class="dots"></span><span class="num" id="sub-comida">654</span></div><button class="add-s" aria-label="Añadir a Comida"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+            <div class="row"><div><div class="n"><span>Arroz blanco cocido</span><span class="dots"></span></div><div class="q">200 g</div></div><span class="k">260</span></div>
+            <div class="row"><div><div class="n"><span>Pechuga de pollo a la plancha</span><span class="dots"></span></div><div class="q">150 g</div></div><span class="k">248</span></div>
+            <div class="row" id="lastrow"><div><div class="n"><span>Aceite de oliva virgen extra</span><span class="mark warn" title="Revisar">!</span><span class="dots"></span></div><div class="q">1 cucharada · 15 ml</div></div><span class="k">146</span></div>
+          </div>
+          <div class="meal">
+            <div class="meal-h"><div class="leader caps"><span>Merienda</span><span class="dots"></span><span class="num">0</span></div><button class="add-s" aria-label="Añadir a Merienda"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+            <div class="empty-row">— sin registros —</div>
+          </div>
+          <div class="meal">
+            <div class="meal-h"><div class="leader caps"><span>Cena</span><span class="dots"></span><span class="num">0</span></div><button class="add-s" aria-label="Añadir a Cena"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+            <div class="empty-row">— sin registros —</div>
+          </div>
+
+          <hr class="cut">
+          <div class="foot">
+            <div class="leader"><span>TOTAL</span><span class="dots"></span><span class="num" id="tot">1.066</span></div>
+            <div class="leader"><span>OBJETIVO</span><span class="dots"></span><span class="num">2.350</span></div>
+            <div class="leader total"><span>RESTANTE</span><span class="dots"></span><span class="num" id="rest2">1.284</span></div>
+          </div>
+          
+        </article>
+
+        <aside class="panel" aria-label="Añadir alimento">
+          <div class="panel-h">
+            <h2>Añadir <span class="slot">→ Comida <svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="m6 9 6 6 6-6"/></svg></span></h2>
+            <div class="search">
+              <label><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Buscar producto o marca" aria-label="Buscar producto"></label>
+              <button class="scan" aria-label="Escanear código de barras"><svg class="i" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 8v8M11 8v8M14 8v8M17 8v8"/></svg></button>
+            </div>
+            <div class="tabs" role="tablist"><button role="tab" aria-selected="false">Recientes</button><button role="tab" aria-selected="true">Favoritos</button><button role="tab" aria-selected="false">Comidas</button><button role="tab" aria-selected="false">Recetas</button></div>
+            <div class="chips"><button class="chip" aria-pressed="true">Todos</button><button class="chip" aria-pressed="false">Mercadona</button><button class="chip" aria-pressed="false">Lidl</button><button class="chip" aria-pressed="false">Carrefour</button></div>
+          </div>
+          <div class="results">
+            <div class="res"><div><div>Yogur natural proteico</div><div class="q">Hacendado · 1 ud · 120 g</div></div><span class="k">91</span><button class="one" data-add="Yogur natural proteico|1 ud · 120 g|91"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>1 toque</button></div>
+            <div class="res"><div><div>Tostada de pan integral</div><div class="q">2 rebanadas · 60 g</div></div><span class="k">148</span><button class="one" data-add="Tostada de pan integral|2 rebanadas · 60 g|148"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>1 toque</button></div>
+            <div class="res"><div><div>Atún al natural</div><div class="q">Lidl · 1 lata · 56 g</div></div><span class="k">62</span><button class="one" data-add="Atún al natural|1 lata · 56 g|62"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>1 toque</button></div>
+            <div class="res"><div><div>Manzana Golden</div><div class="q">1 unidad · 180 g</div></div><span class="k">94</span><button class="one" data-add="Manzana Golden|1 unidad · 180 g|94"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>1 toque</button></div>
+          </div>
+          <div class="qty" aria-label="Cantidad">
+            <div class="top"><b>Queso fresco batido 0 %</b><span class="src">Hacendado</span></div>
+            <div class="amt"><input class="num" value="250" aria-label="Cantidad en gramos" inputmode="decimal"><div class="seg" role="group" aria-label="Unidad"><button aria-pressed="true">g</button><button aria-pressed="false">tarrina</button><button aria-pressed="false">cda.</button></div></div>
+            <div class="seg" role="group" aria-label="Multiplicador"><button aria-pressed="false">½</button><button aria-pressed="true">1×</button><button aria-pressed="false">2×</button></div>
+            <div class="mini"><span>kcal<b>115</b></span><span>P<b>20,0</b></span><span>C<b>8,5</b></span><span>G<b>0,5</b></span></div>
+            <button class="btn primary block">Añadir 115 kcal</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= PROGRESO ================= -->
+    <section class="view" id="v-progreso" aria-label="Progreso">
+      <div class="prog">
+        <div class="headrow"><h1>Progreso</h1>
+          <div class="seg" role="group" aria-label="Rango"><button aria-pressed="false">30 d</button><button aria-pressed="true">90 d</button><button aria-pressed="false">Todo</button></div></div>
+        <div class="prog-grid">
+          <article class="ticket">
+            <div class="caps">Peso y tendencia</div>
+            <figure>
+              <svg class="chart" viewBox="0 0 600 260" width="100%" role="img" aria-labelledby="wcap" id="wchart"></svg>
+              <figcaption id="wcap">Tendencia: −0,4 kg en 7 días · −2,1 kg en 90 días. Puntos: pesaje diario. Línea: tendencia (EMA).</figcaption>
+            </figure>
+          </article>
+          <article class="ticket stat">
+            <div class="caps">Esta semana</div>
+            <div class="leader"><span>Tendencia</span><span class="dots"></span><b class="num">78,9 kg</b></div>
+            <div class="leader"><span>Ritmo</span><span class="dots"></span><b class="num">−0,40 kg/sem</b></div>
+            <div class="leader"><span>TDEE estimado</span><span class="dots"></span><b class="num">2.450</b></div>
+            <div class="leader"><span>Objetivo</span><span class="dots"></span><b class="num">2.050</b></div>
+            <div class="leader"><span>Media ingerida</span><span class="dots"></span><b class="num">2.118</b></div>
+            <hr class="cut" style="margin:6px 0">
+            <div class="caps muted" style="font-size:12px">Días registrados · 6/7</div>
+            <div class="adh" aria-label="6 de 7 días registrados, 1 incompleto"><i class="y"></i><i class="y"></i><i class="y"></i><i class="p" title="Incompleto"></i><i class="y"></i><i class="y"></i><i class="y"></i></div>
+            <div class="leader" style="margin-top:6px"><span class="muted">Pasos (media)</span><span class="dots"></span><span class="num muted">8.940</span></div>
+            <div class="leader"><span class="muted">kcal activas · informativo</span><span class="dots"></span><span class="num muted">486</span></div>
+          </article>
+        </div>
+        <div class="prog-grid" style="margin-top:24px">
+          <article class="ticket">
+            <div class="caps">TDEE adaptativo</div>
+            <figure>
+              <svg class="chart" viewBox="0 0 600 180" width="100%" role="img" aria-labelledby="tcap" id="tchart"></svg>
+              <figcaption id="tcap">Escalones: TDEE aceptado. Discontinua: propuesta rechazada.</figcaption>
+            </figure>
+            <table class="hist" style="margin-top:16px">
+              <thead><tr><th>Semana</th><th class="r">Media</th><th class="r">Δ tend.</th><th class="r">Obs.</th><th class="r">Propuesta</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>46 · 9 nov</td><td class="r">2.118</td><td class="r">−0,40</td><td class="r">2.558</td><td class="r">2.380</td><td><span class="st">Pendiente</span></td></tr>
+                <tr><td>45 · 2 nov</td><td class="r">2.064</td><td class="r">−0,52</td><td class="r">2.636</td><td class="r">2.460</td><td><span class="st">Aceptada</span></td></tr>
+                <tr><td>44 · 26 oct</td><td class="r">2.201</td><td class="r">−0,21</td><td class="r">2.432</td><td class="r">2.420</td><td><span class="st rej">Rechazada</span></td></tr>
+                <tr><td>43 · 19 oct</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td><span class="st skip">Sin ajuste · 3 días</span></td></tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="ticket stat">
+            <div class="caps">Pesajes</div>
+            <div class="leader"><span>lun 16</span><span class="dots"></span><b class="num">78,4</b><span class="src">Salud</span></div>
+            <div class="leader"><span>dom 15</span><span class="dots"></span><b class="num">78,9</b><span class="src">Salud</span></div>
+            <div class="leader"><span>sáb 14</span><span class="dots"></span><b class="num">79,1</b><span class="src">Manual</span></div>
+            <div class="leader"><span>vie 13</span><span class="dots"></span><b class="num">78,7</b><span class="src">Salud</span></div>
+            <div class="leader"><span>jue 12</span><span class="dots"></span><b class="num">—</b><span class="src">&nbsp;</span></div>
+            <div class="leader"><span>mié 11</span><span class="dots"></span><b class="num">79,0</b><span class="src">Salud</span></div>
+            <button class="btn ghost" style="margin-top:8px;justify-self:start">Añadir peso</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PRODUCTOS ================= -->
+    <section class="view" id="v-productos" aria-label="Productos">
+      <div class="headrow" style="max-width:1240px"><h1>Productos</h1>
+        <div style="display:flex;gap:8px"><button class="btn ghost">Importar JSON</button><button class="btn ghost">Escanear</button><button class="btn primary">Nuevo producto</button></div></div>
+      <div class="prod">
+        <div>
+          <div class="filters">
+            <div class="search"><label><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="Nombre, marca o código" aria-label="Buscar productos"></label></div>
+            <button class="chip" aria-pressed="false">Favoritos</button><button class="chip" aria-pressed="true">Mercadona</button><button class="chip" aria-pressed="false">Revisar · 3</button>
+          </div>
+          <table class="ptable">
+            <thead><tr><th style="width:32px"></th><th>Producto</th><th class="r">kcal/100</th><th class="r">P</th><th class="r">C</th><th class="r">G</th><th>Origen</th></tr></thead>
+            <tbody>
+              <tr aria-selected="true"><td><span class="star on"><svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></span></td><td>Queso fresco batido 0 % <div class="brand-c">Hacendado · tarrina 500 g</div></td><td class="num">46</td><td class="num">8,0</td><td class="num">3,4</td><td class="num">0,2</td><td class="src">etiqueta</td></tr>
+              <tr><td><span class="star on"><svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></span></td><td>Yogur natural proteico <div class="brand-c">Hacendado</div></td><td class="num">76</td><td class="num">10,0</td><td class="num">4,1</td><td class="num">1,8</td><td class="src">openfoodfacts</td></tr>
+              <tr><td><span class="star"><svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></span></td><td>Pan de molde integral 100 % <div class="brand-c">Hacendado</div></td><td class="num">247</td><td class="num">11,0</td><td class="num">38,0</td><td class="num">3,9</td><td class="src">web <span class="mark warn">!</span></td></tr>
+              <tr><td><span class="star"><svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></span></td><td>Hummus clásico <div class="brand-c">Hacendado</div></td><td class="num">284</td><td class="num">7,1</td><td class="num">9,8</td><td class="num">23,0</td><td class="src">estimado <span class="mark">≈</span></td></tr>
+              <tr><td><span class="star on"><svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></span></td><td>Aceite de oliva virgen extra <div class="brand-c">Hacendado · 1 l</div></td><td class="num">824</td><td class="num">0,0</td><td class="num">0,0</td><td class="num">91,6</td><td class="src">manual · editado</td></tr>
+              <tr><td><span class="star"><svg class="i" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></svg></span></td><td>Garbanzos cocidos <div class="brand-c">Hacendado · bote 400 g</div></td><td class="num">119</td><td class="num">6,9</td><td class="num">14,4</td><td class="num">2,3</td><td class="src">openfoodfacts</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="label" aria-label="Ficha del producto">
+          <h2 class="lh">Queso fresco batido 0 %</h2>
+          <div class="muted mono" style="font-size:12px">Hacendado · EAN 8480000123456 · g</div>
+          <div class="bar-ink"></div>
+          <div class="caps" style="font-size:12px">Información nutricional · por 100 g</div>
+          <table style="margin-top:6px">
+            <tr class="k"><td>Valor energético</td><td>46 kcal</td></tr>
+            <tr><td>Grasas</td><td>0,2 g</td></tr>
+            <tr class="sub"><td>de las cuales saturadas</td><td>0,1 g</td></tr>
+            <tr><td>Hidratos de carbono</td><td>3,4 g</td></tr>
+            <tr class="sub"><td>de los cuales azúcares</td><td>3,4 g</td></tr>
+            <tr><td>Fibra alimentaria</td><td class="na">—</td></tr>
+            <tr><td>Proteínas</td><td>8,0 g</td></tr>
+            <tr><td>Sal</td><td>0,10 g</td></tr>
+          </table>
+          <div class="sec"><h3>Porciones</h3>
+            <div class="leader"><span>tarrina</span><span class="dots"></span><span class="num">500 g</span></div>
+            <div class="leader"><span>cucharada <span class="mark">≈</span></span><span class="dots"></span><span class="num">20 g</span></div></div>
+          <div class="sec"><h3>Supermercados</h3>
+            <div class="leader"><span>Mercadona</span><span class="dots"></span><span class="num">1,35 €</span></div></div>
+          <div class="prov">Origen: etiqueta (importado de IA) · confianza alta<br>Creado 02/11/2026 · editado a mano 10/11/2026</div>
+          <div style="display:flex;gap:8px;margin-top:16px"><button class="btn primary">Editar</button><button class="btn ghost">Añadir a hoy</button></div>
+          <div class="danger"><button>Eliminar producto</button></div>
+        </aside>
+      </div>
+      <p class="synthetic">Datos de ejemplo, sintéticos.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+// navegación
+const views = {hoy:'v-hoy',progreso:'v-progreso',productos:'v-productos'};
+function show(v){
+  if(!views[v]) v='hoy';
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id===views[v]));
+  document.querySelectorAll('.rail a').forEach(a=>{ if(a.dataset.v===v && a.getAttribute('href')==='#'+v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  scrollTo(0,0);
+}
+document.querySelectorAll('.rail a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault(); show(a.dataset.v);}));
+show((location.hash||'#hoy').slice(1));
+
+// tema
+document.querySelectorAll('.theme button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.theme button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  const t=b.dataset.t; if(t==='system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme=t;
+}));
+
+// "imprimir el renglón"
+const fmt=n=>n.toLocaleString('es-ES');
+let consumed=1066, comida=654; const goal=2350;
+document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>{
+  const [n,q,k]=b.dataset.add.split('|'); const kc=+k;
+  const row=document.createElement('div'); row.className='row printed';
+  row.innerHTML=`<div><div class="n"><span>${n}</span><span class="dots"></span></div><div class="q">${q}</div></div><span class="k">${kc}</span>`;
+  document.getElementById('lastrow').after(row);
+  consumed+=kc; comida+=kc;
+  document.getElementById('sub-comida').textContent=fmt(comida);
+  document.getElementById('tot').textContent=fmt(consumed);
+  const r=goal-consumed;
+  document.getElementById('rest').firstChild.textContent=fmt(r);
+  document.getElementById('rest2').textContent=fmt(r);
+  document.getElementById('kcons').textContent=fmt(consumed)+' consumidas';
+  document.getElementById('kfill').style.width=Math.min(100,consumed/goal*100)+'%';
+}));
+
+// gráficas (datos sintéticos)
+const NS='http://www.w3.org/2000/svg';
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+(function(){
+  const s=document.getElementById('wchart'); const W=600,H=260,L=40,R=10,T=10,B=26;
+  let seed=7; const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+  const pts=[]; let base=81; for(let i=0;i<90;i++){base-=0.024; if(rnd()<0.12){pts.push(null);continue;} pts.push(+(base+(rnd()-.5)*1.4).toFixed(1));}
+  const tr=[]; let t=null; pts.forEach(p=>{ if(p!=null) t=t==null?p:t+0.1*(p-t); tr.push(t); });
+  const min=77,max=82, x=i=>L+(W-L-R)*i/89, y=v=>T+(H-T-B)*(max-v)/(max-min);
+  for(let v=77;v<=82;v++){ el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--rule)','stroke-dasharray':'1 4'},s); el('text',{x:L-8,y:y(v)+4,'text-anchor':'end'},s).textContent=v; }
+  ['ago','sep','oct','nov'].forEach((m,i)=>{el('text',{x:L+i*(W-L-R)/3.2,y:H-6},s).textContent=m;});
+  pts.forEach((p,i)=>{ if(p!=null) el('circle',{cx:x(i),cy:y(p),r:1.8,fill:'var(--ink-2)'},s); });
+  el('path',{d:tr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(''),fill:'none',stroke:'var(--ink)','stroke-width':1.6},s);
+})();
+(function(){
+  const s=document.getElementById('tchart'); const W=600,H=180,L=44,R=10,T=10,B=24;
+  const steps=[2520,2520,2500,2480,2480,2460,2460,2450]; const min=2350,max=2560;
+  const x=i=>L+(W-L-R)*i/steps.length, y=v=>T+(H-T-B)*(max-v)/(max-min);
+  [2400,2450,2500,2550].forEach(v=>{el('line',{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:'var(--rule)','stroke-dasharray':'1 4'},s); el('text',{x:L-8,y:y(v)+4,'text-anchor':'end'},s).textContent=v.toLocaleString('es-ES');});
+  let d=''; steps.forEach((v,i)=>{ d+=(i?'L'+x(i)+' '+y(v):'M'+x(i)+' '+y(v))+'L'+x(i+1)+' '+y(v); });
+  el('path',{d,fill:'none',stroke:'var(--ink)','stroke-width':1.6},s);
+  el('line',{x1:x(5),x2:x(6),y1:y(2420),y2:y(2420),stroke:'var(--ink-2)','stroke-dasharray':'4 3','stroke-width':1.2},s);
+  el('line',{x1:x(8)-2,x2:x(8)-2,y1:y(2450),y2:y(2380),stroke:'var(--alert)','stroke-dasharray':'2 3'},s);
+  el('circle',{cx:x(8)-2,cy:y(2380),r:3.5,fill:'var(--paper)',stroke:'var(--alert)','stroke-width':1.5},s);
+  el('text',{x:x(8)-10,y:y(2380)+16,'text-anchor':'end',fill:'var(--alert)'},s).textContent='propuesta 2.380';
+  for(let i=0;i<steps.length;i+=2) el('text',{x:x(i),y:H-6},s).textContent='s'+(39+i);
+})();
+</script>
+</body>
+</html>
