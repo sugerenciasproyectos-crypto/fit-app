@@ -2,6 +2,8 @@
 
 App personal de registro de calorías, macros y peso (PWA para iPhone) con TDEE adaptativo.
 
+**Producción:** https://fit-app-lac-omega.vercel.app (Vercel, despliegue automático desde `main`).
+
 ## Documentación
 
 - [PRD](docs/01-PRD.md)
