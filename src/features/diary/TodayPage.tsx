@@ -185,6 +185,21 @@ export default function TodayPage() {
         : undefined;
   const productDetail = useProduct(pending);
 
+  // Enlace desde el escáner: /?producto=<id> abre H2 con ese producto.
+  const deepId = params.get('producto');
+  const deepProduct = useProduct(deepId ?? undefined);
+  useEffect(() => {
+    if (!deepId || !deepProduct.data || !slots.data) return;
+    // Sincroniza con la URL (sistema externo): se abre una sola vez y se limpia el parámetro.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setSheet({
+      kind: 'qty',
+      product: deepProduct.data,
+      slotId: slotForTime(slots.data, madridTime(new Date()))?.id ?? '',
+    });
+    setParams({}, { replace: true });
+  }, [deepId, deepProduct.data, slots.data, setParams]);
+
   return (
     <div
       className="grid gap-4 py-3"

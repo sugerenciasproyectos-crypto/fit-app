@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}', 'packages/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'packages/**/*.test.ts', 'supabase/functions/**/*.test.ts'],
     coverage: {
       include: ['src/domain/**/*.ts', 'packages/schemas/src/**/*.ts'],
       exclude: ['**/*.test.ts'],

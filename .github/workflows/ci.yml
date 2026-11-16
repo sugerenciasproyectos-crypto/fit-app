@@ -18,3 +18,5 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:coverage
       - run: npm run build
+      - name: La clave de USDA no está en el bundle
+        run: "! grep -rq 'api.nal.usda.gov' dist"

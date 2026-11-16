@@ -1,9 +1,14 @@
 import { ScanBarcode, Search } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
 import { Link } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { fmtKcal } from '../../lib/format';
+import { supabase } from '../../lib/supabase';
+import { Button } from '../../ui/primitives';
 import { Sheet } from '../../ui/Sheet';
-import { useProductSearch, type Product } from '../products/api';
+import { useUserId } from '../auth/useAuth';
+import { searchUsda, upsertExternal, type Normalized } from '../external/cache';
+import { productsKey, useProductSearch, type Product } from '../products/api';
 import type { MealSlot } from './api';
 
 type Tab = 'recientes' | 'favoritos';
@@ -39,6 +44,38 @@ export function AddSheet({
           .sort((x, y) => y.last_used_at!.localeCompare(x.last_used_at!))
           .slice(0, 25)
       : data;
+
+  const userId = useUserId();
+  const qc = useQueryClient();
+  const [ext, setExt] = useState<{
+    q: string;
+    results: Normalized[] | null;
+    busy: boolean;
+    error: string | null;
+  }>({ q: '', results: null, busy: false, error: null });
+  if (ext.q !== deferred && (ext.results || ext.error))
+    setExt({ q: deferred, results: null, busy: false, error: null });
+
+  async function searchExternal() {
+    setExt({ q: deferred, results: null, busy: true, error: null });
+    try {
+      const results = await searchUsda(supabase, deferred);
+      setExt({ q: deferred, results, busy: false, error: null });
+    } catch (e) {
+      setExt({ q: deferred, results: null, busy: false, error: (e as Error).message });
+    }
+  }
+
+  async function pickExternal(n: Normalized) {
+    setExt((s) => ({ ...s, busy: true }));
+    try {
+      const product = await upsertExternal(supabase, userId, n, null);
+      void qc.invalidateQueries({ queryKey: productsKey });
+      onPick(product);
+    } catch (e) {
+      setExt((s) => ({ ...s, busy: false, error: (e as Error).message }));
+    }
+  }
 
   return (
     <Sheet title="Añadir" onClose={onClose} tall>
@@ -126,11 +163,19 @@ export function AddSheet({
         <div className="grid gap-3 py-6 text-center">
           <p className="text-ink-2">
             {searching
-              ? 'Nada en tu base.'
+              ? ext.results
+                ? 'Tampoco en USDA ni OFF.'
+                : 'Nada en tu base.'
               : tab === 'favoritos'
                 ? 'Aún no hay favoritos. Marca ☆ en cualquier producto.'
                 : 'Aún no hay recientes.'}
           </p>
+          {searching && !ext.results && (
+            <Button variant="ghost" disabled={ext.busy} onClick={() => void searchExternal()}>
+              {ext.busy ? 'Buscando fuera…' : 'Buscar en USDA / OFF'}
+            </Button>
+          )}
+          {ext.error && <p className="text-sm text-alert">{ext.error}</p>}
           {searching && (
             <Link
               to={`/productos/nuevo?nombre=${encodeURIComponent(q)}`}
@@ -140,6 +185,35 @@ export function AddSheet({
             </Link>
           )}
         </div>
+      )}
+      {searching && ext.results && ext.results.length > 0 && (
+        <section aria-label="Resultados externos" className="mt-2 grid gap-1">
+          <p className="num text-xs tracking-[0.12em] text-ink-2">
+            USDA · se guarda solo el que elijas
+          </p>
+          <ul className="divide-y divide-dashed divide-rule">
+            {ext.results.map((r) => (
+              <li key={r.source_id}>
+                <button
+                  type="button"
+                  disabled={ext.busy}
+                  onClick={() => void pickExternal(r)}
+                  className="flex min-h-12 w-full items-baseline gap-1 py-2 text-left"
+                >
+                  <span className="min-w-0 truncate">
+                    {r.needs_review && <span className="mr-1 text-alert">⚠</span>}
+                    {r.name}
+                  </span>
+                  <span aria-hidden className="leader min-w-4 flex-1" />
+                  <span className="num shrink-0">
+                    {r.energy_kcal == null ? '—' : fmtKcal(r.energy_kcal)}
+                    <span className="text-xs text-ink-2">/100g</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </Sheet>
   );

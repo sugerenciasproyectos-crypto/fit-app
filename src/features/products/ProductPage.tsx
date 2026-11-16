@@ -109,6 +109,12 @@ function Editor({ product }: { product: ProductWithPortions | null }) {
         </button>
       </header>
       <h1 className="num text-2xl">{product ? 'Producto' : 'Nuevo producto'}</h1>
+      {!product && params.get('noencontrado') && (
+        <p role="status" className="text-sm">
+          Código <span className="num">{params.get('codigo')}</span> no está en Open Food Facts.
+          Créalo con los datos de la etiqueta.
+        </p>
+      )}
 
       <div className="grid gap-4">
         <TextField

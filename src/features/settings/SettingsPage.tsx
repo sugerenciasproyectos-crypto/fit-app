@@ -4,7 +4,10 @@ import { Link } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import { Button, SectionTitle } from '../../ui/primitives';
 
-const LINKS = [{ to: '/ajustes/perfil', label: 'Perfil y objetivo' }] as const;
+const LINKS = [
+  { to: '/ajustes/perfil', label: 'Perfil y objetivo' },
+  { to: '/ajustes/acerca', label: 'Acerca de y atribuciones' },
+] as const;
 
 export default function SettingsPage() {
   const qc = useQueryClient();

@@ -11,6 +11,8 @@ import Onboarding from './features/onboarding/Onboarding';
 import ProductPage from './features/products/ProductPage';
 import ProductsPage from './features/products/ProductsPage';
 import ProfileEdit from './features/profile/ProfileEdit';
+import ScannerPage from './features/scanner/ScannerPage';
+import AboutPage from './features/settings/AboutPage';
 import SettingsPage from './features/settings/SettingsPage';
 import ProgressPage from './features/progress/ProgressPage';
 import TodayPage from './features/diary/TodayPage';
@@ -31,6 +33,7 @@ const router = createBrowserRouter([
       {
         element: <RequireProfile />,
         children: [
+          { path: '/escanear', element: <ScannerPage /> },
           {
             element: <AppShell />,
             children: [
@@ -40,6 +43,7 @@ const router = createBrowserRouter([
               { path: 'productos/:id', element: <ProductPage /> },
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/perfil', element: <ProfileEdit /> },
+              { path: 'ajustes/acerca', element: <AboutPage /> },
             ],
           },
         ],
