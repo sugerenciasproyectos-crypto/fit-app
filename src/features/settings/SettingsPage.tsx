@@ -6,6 +6,7 @@ import { Button, SectionTitle } from '../../ui/primitives';
 
 const LINKS = [
   { to: '/ajustes/perfil', label: 'Perfil y objetivo' },
+  { to: '/ajustes/salud', label: 'Apple Salud (atajo y token)' },
   { to: '/ajustes/acerca', label: 'Acerca de y atribuciones' },
 ] as const;
 

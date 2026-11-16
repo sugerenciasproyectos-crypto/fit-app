@@ -907,11 +907,13 @@ export type Database = {
         Returns: Json
       }
       copy_seed_to: { Args: { p_user: string }; Returns: number }
+      create_api_token: { Args: never; Returns: string }
       f_norm: { Args: { t: string }; Returns: string }
       import_products: {
         Args: { decisions: Json; payload: Json }
         Returns: Json
       }
+      revoke_api_token: { Args: never; Returns: undefined }
       search_products: {
         Args: {
           lim?: number

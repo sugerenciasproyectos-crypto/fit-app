@@ -17,6 +17,7 @@ import AboutPage from './features/settings/AboutPage';
 import ImportPage from './features/import/ImportPage';
 import SupermarketsPage from './features/supermarkets/SupermarketsPage';
 import RecipePage from './features/recipes/RecipePage';
+import HealthPage from './features/health/HealthPage';
 import SettingsPage from './features/settings/SettingsPage';
 import ProgressPage from './features/progress/ProgressPage';
 import TodayPage from './features/diary/TodayPage';
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
               { path: 'ajustes', element: <SettingsPage /> },
               { path: 'ajustes/perfil', element: <ProfileEdit /> },
               { path: 'ajustes/acerca', element: <AboutPage /> },
+              { path: 'ajustes/salud', element: <HealthPage /> },
             ],
           },
         ],
