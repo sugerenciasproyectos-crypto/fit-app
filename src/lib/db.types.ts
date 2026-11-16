@@ -897,6 +897,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_product_correction: {
+        Args: {
+          p_dry?: boolean
+          p_from?: string
+          p_product: string
+          p_to?: string
+        }
+        Returns: Json
+      }
       copy_seed_to: { Args: { p_user: string }; Returns: number }
       f_norm: { Args: { t: string }; Returns: string }
       import_products: {

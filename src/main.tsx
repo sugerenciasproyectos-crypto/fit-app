@@ -16,6 +16,7 @@ import ScannerPage from './features/scanner/ScannerPage';
 import AboutPage from './features/settings/AboutPage';
 import ImportPage from './features/import/ImportPage';
 import SupermarketsPage from './features/supermarkets/SupermarketsPage';
+import RecipePage from './features/recipes/RecipePage';
 import SettingsPage from './features/settings/SettingsPage';
 import ProgressPage from './features/progress/ProgressPage';
 import TodayPage from './features/diary/TodayPage';
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
               { path: 'productos', element: <ProductsHub /> },
               { path: 'productos/comidas/:id', element: <SavedMealPage /> },
               { path: 'importar', element: <ImportPage /> },
+              { path: 'productos/recetas/:id', element: <RecipePage /> },
               { path: 'supermercados', element: <SupermarketsPage /> },
               { path: 'productos/:id', element: <ProductPage /> },
               { path: 'ajustes', element: <SettingsPage /> },

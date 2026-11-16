@@ -5,8 +5,10 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { NUTRIENT_KEYS } from '../../domain/nutrition';
 import { Button, SectionTitle, TextField } from '../../ui/primitives';
 import { useUserId } from '../auth/useAuth';
+import { CorrectionSheet } from './CorrectionSheet';
 import { ProductSupermarkets } from '../supermarkets/ProductSupermarkets';
 import {
+  correctionPreview,
   productsKey,
   saveProduct,
   softDeleteProduct,
@@ -55,6 +57,7 @@ function Editor({ product }: { product: ProductWithPortions | null }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [correcting, setCorrecting] = useState(false);
 
   const set = (patch: Partial<ProductDraft>) => {
     setDraft((d) => ({ ...d, ...patch }));
@@ -73,6 +76,11 @@ function Editor({ product }: { product: ProductWithPortions | null }) {
       await qc.invalidateQueries({ queryKey: productsKey });
       setSaved(true);
       if (!product) navigate(`/productos/${pid}`, { replace: true });
+      // 9.4: si cambian los nutrientes y hay registros que lo usan, ofrecer la corrección.
+      else if (NUTRIENT_KEYS.some((k) => patch[k] !== product[k])) {
+        const pre = await correctionPreview(pid).catch(() => null);
+        if (pre?.rows) setCorrecting(true);
+      }
     } catch (e) {
       setErrors(dbErrorToField((e as Error).message));
     } finally {
@@ -308,6 +316,9 @@ function Editor({ product }: { product: ProductWithPortions | null }) {
             </Button>
           )}
         </div>
+      )}
+      {correcting && product && (
+        <CorrectionSheet productId={product.id} onClose={() => setCorrecting(false)} />
       )}
     </div>
   );

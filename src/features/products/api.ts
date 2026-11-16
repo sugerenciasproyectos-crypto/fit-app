@@ -138,3 +138,19 @@ export async function softDeleteProduct(id: string) {
     .eq('id', id);
   if (error) throw error;
 }
+
+export interface CorrectionPreview {
+  rows: number;
+  kcal_delta: number;
+}
+
+export async function correctionPreview(productId: string, from?: string, to?: string) {
+  const { data, error } = await supabase.rpc('apply_product_correction', {
+    p_product: productId,
+    p_from: from || undefined,
+    p_to: to || undefined,
+    p_dry: true,
+  });
+  if (error) throw error;
+  return data as unknown as CorrectionPreview;
+}

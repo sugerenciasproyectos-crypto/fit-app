@@ -10,7 +10,7 @@ function Row({ p }: { p: Product }) {
   return (
     <li>
       <Link
-        to={`/productos/${p.id}`}
+        to={p.source === 'receta' ? `/productos/recetas/${p.id}` : `/productos/${p.id}`}
         className="flex min-h-12 items-baseline gap-1 py-2"
         aria-label={`${p.name}${p.brand ? `, ${p.brand}` : ''}, ${p.energy_kcal == null ? 'kilocalorías desconocidas' : `${fmtKcal(p.energy_kcal)} kilocalorías por 100 ${p.base_unit}`}`}
       >
