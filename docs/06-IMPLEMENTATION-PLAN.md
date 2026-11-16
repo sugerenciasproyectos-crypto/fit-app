@@ -241,3 +241,20 @@ Total: **unas 131 h, unas 24 semanas**. El TDEE adaptativo necesita al menos 14 
 - Tienes cuenta en GitHub, Supabase y Cloudflare, y una clave gratuita de USDA (data.gov).
 - Las estimaciones incluyen escribir los tests pero no la curva de aprendizaje de herramientas nuevas (Supabase y Deno). Puede que la fase 0–2 te lleve un 30–50 % más.
 - Probarás cada PR en tu iPhone desde la URL de previsualización.
+
+## Notas de implementación (2026-11-16)
+Cambios respecto al plan, decididos durante la implementación:
+
+| Tema | Plan | Real | Motivo |
+|---|---|---|---|
+| Repositorio | `app-calorias` | `fit-app` | Nombre elegido al crearlo. |
+| Hosting | Cloudflare Pages | **Vercel** | Elección del usuario (sesión ya abierta). |
+| Linter | ESLint | **oxlint** | Viene en la plantilla actual de Vite y es más rápido. Prettier se mantiene. |
+| React | 18 | **19** | Versión de la plantilla de Vite; no cambia ninguna decisión. |
+| Supabase | `calorias-dev` y `calorias-prod` | Igual, en la organización gratuita `fit-app` | La organización anterior ya tenía 2 proyectos activos. |
+| Tests de Edge Functions | `deno test` | **Vitest** sobre la lógica pura (`supabase/functions/_shared`) | Deno no está instalado; la lógica no depende de Deno y las funciones se prueban de punta a punta contra dev (`tests/db/health.test.ts`). |
+| Catálogo de partida | ~150 alimentos USDA | 162 alimentos con valores aproximados (USDA SR Legacy) | Generado por `scripts/build-seed.ts`; origen `usda-sr-legacy`. |
+| Clave de USDA | Clave personal de data.gov | `DEMO_KEY` provisional | Funciona con límites bajos (≈30 peticiones/hora). Sustituir por una clave propia. |
+| TRD §9 (`supabase start`) | Local con Docker | Proyecto `calorias-dev` en la nube | Decisión abierta 3 del plan, aplicada. |
+
+**Comandos útiles:** `npm test` (unitarios y componentes), `npm run test:coverage` (100 % en dominio y esquemas), `npm run test:db` (RLS, RPC y Edge Functions contra dev), `npm run test:e2e` (Playwright WebKit con axe), `sh scripts/db-push-prod.sh` (migraciones a prod).
