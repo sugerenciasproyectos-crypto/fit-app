@@ -79,3 +79,21 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Puntos guía del ticket entre nombre y cifra */
+.leader {
+  border-bottom: 1px dotted var(--rule);
+  transform: translateY(-0.25em);
+}
+
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0.75rem);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
