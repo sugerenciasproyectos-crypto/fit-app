@@ -24,4 +24,4 @@ function req(k: string): string {
   return v;
 }
 
-export const env = new Proxy({} as Record<string, string>, { get: (_t, k: string) => req(k) });
+export const env = (k: string): string => req(k);

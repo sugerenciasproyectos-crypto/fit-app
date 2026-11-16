@@ -2,21 +2,21 @@
  * RLS-1 contra calorias-dev: un usuario B no puede leer ni escribir datos de A en ninguna tabla.
  * Requiere .env.local (URL y clave pública) y .env.test.local (usuarios de prueba A y B).
  */
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Database } from '../../src/lib/db.types';
 import { env } from './env';
 
-type Client = SupabaseClient<Database>;
+type Client = ReturnType<typeof createClient<Database>>;
 type Table = keyof Database['public']['Tables'];
 
 async function signIn(tag: 'A' | 'B'): Promise<{ db: Client; id: string }> {
-  const db = createClient<Database>(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY, {
+  const db = createClient<Database>(env('VITE_SUPABASE_URL'), env('VITE_SUPABASE_ANON_KEY'), {
     auth: { persistSession: false },
   });
   const { data, error } = await db.auth.signInWithPassword({
-    email: env[`TEST_${tag}_EMAIL`],
-    password: env[`TEST_${tag}_PASSWORD`],
+    email: env(`TEST_${tag}_EMAIL`),
+    password: env(`TEST_${tag}_PASSWORD`),
   });
   if (error) throw error;
   return { db, id: data.user.id };
